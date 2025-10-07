@@ -1,0 +1,9 @@
+Core application framework and server
+fastapi
+uvicorn[standard]
+
+Database connector for Snowflake
+snowflake-connector-python
+
+Utility for loading environment variables
+python-dotenv
