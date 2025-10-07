@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global AI Data Sync Dashboard</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide icons for aesthetics -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom font and Global Slate/Amber Theme */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F1F5F9;
+            /* Slate-100 equivalent */
+            background-image: linear-gradient(to bottom, #F8FAFC, #F1F5F9);
+            /* Subtle gradient for depth */
+            min-height: 100vh;
+        }
+
+        /* Keyframes for Subtle Header Glow */
+        @keyframes header-glow {
+
+            0%,
+            100% {
+                text-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+            }
+
+            50% {
+                text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+            }
+        }
+
+        /* Enhanced Style for data statistics cards */
+        .stat-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+            border-left: 5px solid transparent;
+        }
+
+        /* Hover effect: lift card and give it an amber glow */
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px -5px rgba(245, 158, 11, 0.2), 0 0 0 2px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Specific border color for status cards */
+        #successful-syncs-card {
+            border-left-color: #10B981;
+        }
+
+        /* Green */
+        #failed-syncs-card {
+            border-left-color: #EF4444;
+        }
+
+        /* Red */
+        #time-offset-card {
+            border-left-color: #06B6D4;
+        }
+
+        /* Cyan */
+        #total-records-card,
+        #last-sync-card {
+            border-left-color: #F59E0B;
+        }
+
+        /* Amber */
+
+        /* Custom styling for primary action buttons */
+        .action-button {
+            transition: all 0.15s ease-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px -3px rgba(245, 158, 11, 0.5);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Pulse animation for key status elements */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.3);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .sync-indicator {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .sync-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 9999px;
+            background-color: currentColor;
+            animation: pulse-ring 1.5s cubic-bezier(0, 0.2, 0.5, 1) infinite;
+        }
+
+        .sync-indicator-dot {
+            position: relative;
+        }
+
+        /* Styling for the main content box (Form) to make it stand out */
+        .main-content-box {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.5s ease;
+        }
+
+        .main-content-box:hover {
+            box-shadow: 0 20px 35px -5px rgba(245, 158, 11, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .header-title-ai {
+            animation: header-glow 4s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-10">
+
+    <div id="app" class="max-w-7xl mx-auto">
+
+        <!-- Global Banner Section (Amber Themed) -->
+        <div
+            class="mb-10 p-4 bg-amber-500/10 border border-amber-300 rounded-xl flex items-center justify-center text-center shadow-md">
+            <p class="text-sm font-semibold text-amber-700">
+                <span class="sync-indicator text-amber-500 mr-2">
+                    <i data-lucide="globe" class="w-4 h-4 inline-block sync-indicator-dot"></i>
+                </span>
+                Global Reporting Standard: **IST (Indian Standard Time)**. All times are converted to this baseline.
+            </p>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">Global <span
+                    class="text-amber-600 header-title-ai">AI</span> Data Sync Dashboard</h1>
+            <p class="text-lg text-slate-600 mt-2">Real-time status and time zone–aware upload for mission-critical
+                health records.</p>
+        </header>
+
+        <!-- Notification Modal -->
+        <div id="notification-modal"
+            class="hidden fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div
+                class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 border-t-4 border-amber-500">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-slate-800">Notification</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <p id="modal-message" class="text-slate-600 mb-8"></p>
+                <button onclick="closeModal()"
+                    class="w-full bg-amber-600 text-white py-3 rounded-lg font-bold hover:bg-amber-700 transition action-button">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section class="mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-700 mb-4 sm:mb-0">Global Sync Summary</h2>
+                <button id="sync-button" onclick="fetchReportSummary()"
+                    class="flex items-center space-x-2 bg-teal-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-teal-600 transition shadow-md action-button w-full sm:w-auto justify-center">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <span>Sync Data</span>
+                </button>
+            </div>
+
+            <!-- Stat Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+
+                <!-- Time Offset Card (Cyan/Teal Accent) -->
+                <div id="time-offset-card" class="stat-card bg-white p-6 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">Local Time Zone</p>
+                        <i data-lucide="clock-2" class="w-6 h-6 text-cyan-500"></i>
+                    </div>
+                    <p id="time-offset" class="text-3xl font-extrabold text-slate-900 mt-2">N/A</p>
+                </div>
+
+                <!-- Total Records Card (Amber Accent) -->
+                <div id="total-records-card" class="stat-card bg-white p-6 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">Total Records Synced</p>
+                        <i data-lucide="database" class="w-6 h-6 text-amber-500"></i>
+                    </div>
+                    <p id="total-records" class="text-3xl font-extrabold text-slate-900 mt-2">--</p>
+                </div>
+
+                <!-- Successful Syncs Card (Green Accent) -->
+                <div id="successful-syncs-card" class="stat-card bg-white p-6 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">Successful Syncs</p>
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-500"></i>
+                    </div>
+                    <p id="successful-syncs" class="text-3xl font-extrabold text-slate-900 mt-2">--</p>
+                </div>
+
+                <!-- Failed Syncs Card (Red Accent) -->
+                <div id="failed-syncs-card" class="stat-card bg-white p-6 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">Failed Syncs</p>
+                        <i data-lucide="x-circle" class="w-6 h-6 text-red-500"></i>
+                    </div>
+                    <p id="failed-syncs" class="text-3xl font-extrabold text-slate-900 mt-2">--</p>
+                </div>
+
+                <!-- Last Sync Time Card (Amber Accent) -->
+                <div id="last-sync-card" class="stat-card bg-white p-6 rounded-xl border border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-slate-500">Last Sync Time (IST)</p>
+                        <i data-lucide="calendar" class="w-6 h-6 text-amber-500"></i>
+                    </div>
+                    <p id="last-sync-time" class="text-xl font-extrabold text-slate-900 mt-2">N/A</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Form Section (Slate-colored content box with glow) -->
+        <section class="main-content-box bg-white p-6 md:p-8 rounded-xl border border-gray-200">
+            <h2 class="text-2xl font-bold text-slate-700 mb-6">Time Zone–Aware Patient Treatment Upload</h2>
+            <form id="upload-form" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Hospital ID -->
+                <div>
+                    <label for="hospital-id" class="block text-sm font-medium text-slate-700 mb-1">Hospital ID</label>
+                    <input type="text" id="hospital-id" value="HOSPITAL_A" required
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                </div>
+
+                <!-- Hospital Time Zone (EXPANDED LIST) -->
+                <div>
+                    <label for="hospital-timezone" class="block text-sm font-medium text-slate-700 mb-1">Hospital Time
+                        Zone (Local Time)</label>
+                    <select id="hospital-timezone" required
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition bg-slate-50 shadow-sm"
+                        onchange="updateTimezoneChange()">
+                        <!-- Global Time Zones -->
+                        <option value="IST" selected>IST (Indian Standard Time, UTC+5:30) - Default for India</option>
+                        <optgroup label="Americas">
+                            <option value="EST">EST (Eastern Standard Time, UTC-5:00)</option>
+                            <option value="CST">CST (Central Standard Time, UTC-6:00)</option>
+                            <option value="MST">MST (Mountain Standard Time, UTC-7:00)</option>
+                            <option value="PST">PST (Pacific Standard Time, UTC-8:00)</option>
+                            <option value="ART">ART (Argentina Time, UTC-3:00)</option>
+                        </optgroup>
+                        <optgroup label="Europe / Africa">
+                            <option value="GMT/UTC">GMT/UTC (Coordinated Universal Time, UTC+0:00)</option>
+                            <option value="CET">CET (Central European Time, UTC+1:00)</option>
+                            <option value="EET">EET (Eastern European Time, UTC+2:00)</option>
+                            <option value="MSK">MSK (Moscow Time, UTC+3:00)</option>
+                        </optgroup>
+                        <optgroup label="Asia / Pacific">
+                            <option value="GST">GST (Gulf Standard Time, UTC+4:00)</option>
+                            <option value="SGT">SGT (Singapore Standard Time, UTC+8:00)</option>
+                            <option value="JST">JST (Japan Standard Time, UTC+9:00)</option>
+                            <option value="AEST">AEST (Australian Eastern Standard Time, UTC+10:00)</option>
+                            <option value="NZST">NZST (New Zealand Standard Time, UTC+12:00)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Patient ID -->
+                <div>
+                    <label for="patient-id" class="block text-sm font-medium text-slate-700 mb-1">Patient ID</label>
+                    <input type="text" id="patient-id" value="P_001" required
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm bg-slate-50">
+                </div>
+
+                <!-- Local Timestamp -->
+                <div>
+                    <label for="local-timestamp" class="block text-sm font-medium text-slate-700 mb-1">Local Timestamp
+                        (YYYY-MM-DD HH:MM:SS) - Editable</label>
+                    <input type="text" id="local-timestamp" required
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm bg-slate-50"
+                        oninput="updateTimezoneDisplay()">
+                    <p id="ist-time-display" class="text-xs text-cyan-600 mt-1 font-semibold">Converted IST Reporting
+                        Time: N/A</p>
+                </div>
+
+                <!-- Treatment Type (UPDATED WITH REAL-WORLD OPTIONS) -->
+                <div>
+                    <label for="treatment-type" class="block text-sm font-medium text-slate-700 mb-1">Treatment
+                        Type</label>
+                    <select id="treatment-type" required
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition bg-slate-50 shadow-sm">
+
+                        <optgroup label="Medication & Support">
+                            <option value="Medication_Administration" selected>Medication Administration</option>
+                            <option value="IV_Fluid_Therapy">IV Fluid Therapy</option>
+                            <option value="Pain_Management">Pain Management</option>
+                            <option value="Blood_Transfusion">Blood Transfusion</option>
+                            <option value="Nutritional_Counseling">Nutritional Counseling</option>
+                        </optgroup>
+
+                        <optgroup label="Surgical & Procedural">
+                            <option value="Emergency_Surgery">Emergency Surgery</option>
+                            <option value="Elective_Procedure">Elective Procedure</option>
+                            <option value="Biopsy">Biopsy / Tissue Sampling</option>
+                            <option value="Wound_Care">Wound Care / Debridement</option>
+                            <option value="Catheter_Insertion">Catheter Insertion</option>
+                        </optgroup>
+
+                        <optgroup label="Diagnostic & Imaging">
+                            <option value="Lab_Work">Blood & Urine Lab Work</option>
+                            <option value="X_Ray">X-Ray Imaging</option>
+                            <option value="CT_Scan">CT Scan</option>
+                            <option value="MRI">MRI Scan</option>
+                            <option value="Ultrasound">Ultrasound</option>
+                        </optgroup>
+
+                        <optgroup label="Specialized & Therapy">
+                            <option value="Chemotherapy">Chemotherapy</option>
+                            <option value="Radiation_Therapy">Radiation Therapy</option>
+                            <option value="Dialysis">Renal Dialysis</option>
+                            <option value="Respiratory_Therapy">Respiratory Therapy</option>
+                            <option value="Physical_Therapy">Physical Therapy</option>
+                            <option value="Mental_Health_Consult">Mental Health Consult</option>
+                        </optgroup>
+
+                    </select>
+                </div>
+
+                <div class="md:col-span-3">
+                    <!-- Placeholder to align layout -->
+                </div>
+
+                <!-- Treatment Notes (JSON) - Spanning 3 Columns -->
+                <div class="md:col-span-3">
+                    <label for="treatment-notes" class="block text-sm font-medium text-slate-700 mb-1">Treatment Notes
+                        (JSON Object)</label>
+                    <textarea id="treatment-notes" rows="3" placeholder='{"key": "value"}'
+                        class="w-full border border-gray-300 p-3 rounded-lg focus:ring-amber-500 focus:border-amber-500 transition shadow-sm bg-slate-50"></textarea>
+                    <p class="text-xs text-slate-500 mt-1">Example: `{"drug": "Aspirin", "dose": "5mg"}`. Context data
+                        like Time Zone and IST time are automatically added.</p>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="md:col-span-3 mt-4 flex justify-end">
+                    <button type="submit" id="upload-button"
+                        class="action-button flex items-center space-x-2 bg-amber-600 text-white py-3 px-6 rounded-lg font-bold hover:bg-amber-700 transition shadow-lg w-full md:w-auto justify-center">
+                        <i data-lucide="upload" class="w-5 h-5"></i>
+                        <span>Upload Data to Snowflake</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    </div>
+
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8000';
+        const uploadForm = document.getElementById('upload-form');
+        const syncButton = document.getElementById('sync-button');
+        const uploadButton = document.getElementById('upload-button');
+
+        // --- GLOBAL REPORTING TIME ZONE SETTING (IST) ---
+        const GLOBAL_REPORTING_TZ_NAME = 'IST';
+        const GLOBAL_REPORTING_TZ_OFFSET = 5.5; // Indian Standard Time is UTC+5:30
+
+        // Comprehensive time zone offsets in hours from UTC.
+        const TIMEZONE_OFFSETS = {
+            'GMT/UTC': 0.0,
+            'EST': -5.0,
+            'CST': -6.0,
+            'MST': -7.0,
+            'PST': -8.0,
+            'ART': -3.0,
+            'CET': 1.0,
+            'EET': 2.0,
+            'MSK': 3.0,
+            'GST': 4.0,
+            'IST': 5.5,
+            'SGT': 8.0,
+            'JST': 9.0,
+            'AEST': 10.0,
+            'NZST': 12.0
+        };
+
+        // --- Utility Functions for Modal (Custom Alert/Confirm) ---
+        function showModal(title, message, isError = false) {
+            const modal = document.getElementById('notification-modal');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+
+            const titleElement = document.getElementById('modal-title');
+            const borderElement = modal.querySelector('.border-t-4');
+
+            if (isError) {
+                titleElement.classList.remove('text-slate-800');
+                titleElement.classList.add('text-red-600');
+                borderElement.classList.remove('border-amber-500');
+                borderElement.classList.add('border-red-500');
+            } else {
+                titleElement.classList.remove('text-red-600');
+                titleElement.classList.add('text-slate-800');
+                borderElement.classList.remove('border-red-500');
+                borderElement.classList.add('border-amber-500');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+        }
+
+        /**
+         * Helper function to format a Date object into YYYY-MM-DD HH:MM:SS string based on a given offset (in milliseconds).
+         */
+        function formatTimeFromUTC(utcMillis, offsetMillis) {
+            const targetMillis = utcMillis + offsetMillis;
+            const targetDate = new Date(targetMillis);
+
+            const year = targetDate.getUTCFullYear();
+            const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(targetDate.getUTCDate()).padStart(2, '0');
+            const hours = String(targetDate.getUTCHours()).padStart(2, '0');
+            const minutes = String(targetDate.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(targetDate.getUTCSeconds()).padStart(2, '0');
+
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        /**
+         * Calculates the target time (IST) based on local timestamp and selected hospital time zone.
+         * The process is: Local Time -> UTC -> Target Time (IST)
+         */
+        function calculateTargetTime(localTimestamp, localOffsetHours, targetOffsetHours) {
+            try {
+                const dateParts = localTimestamp.split(/[- :]/).map(Number);
+                // Create a Date object assuming the parts are in the selected local time zone.
+                const localDate = new Date(
+                    dateParts[0], dateParts[1] - 1, dateParts[2],
+                    dateParts[3], dateParts[4], dateParts[5] || 0
+                );
+
+                if (isNaN(localDate.getTime())) {
+                    return null;
+                }
+
+                // Get UTC milliseconds from the local time parts.
+                const localOffsetMillis = localOffsetHours * 3600000;
+                const utcMillis = localDate.getTime() - localOffsetMillis;
+
+                // Convert UTC Time to Target Time (IST)
+                const targetOffsetMillis = targetOffsetHours * 3600000;
+
+                return formatTimeFromUTC(utcMillis, targetOffsetMillis);
+
+            } catch (e) {
+                console.error("Date conversion failed:", e);
+                return null;
+            }
+        }
+
+        /**
+         * Sets the Local Timestamp input field to the current time in the selected time zone.
+         */
+        function setLocalTimestampToCurrentZoneTime() {
+            const timezoneSelect = document.getElementById('hospital-timezone');
+            const selectedTZ = timezoneSelect.value;
+            const localOffsetHours = TIMEZONE_OFFSETS[selectedTZ];
+
+            // Current UTC time in milliseconds
+            const now = Date.now();
+            const localOffsetMillis = localOffsetHours * 3600000;
+
+            const formattedTime = formatTimeFromUTC(now, localOffsetMillis);
+
+            document.getElementById('local-timestamp').value = formattedTime;
+        }
+
+        /**
+         * Updates all time zone related displays (Offset card and IST converted time).
+         */
+        function updateTimezoneDisplay() {
+            const localTimestampInput = document.getElementById('local-timestamp').value;
+            const timezoneSelect = document.getElementById('hospital-timezone');
+            const selectedTZ = timezoneSelect.value;
+            const localOffsetHours = TIMEZONE_OFFSETS[selectedTZ];
+
+            const istTimeDisplay = document.getElementById('ist-time-display');
+            const offsetDisplay = document.getElementById('time-offset');
+
+            // 1. Update Time Offset Card display (Local Time Zone name and offset)
+            const offsetSign = localOffsetHours >= 0 ? '+' : '-';
+            const absoluteHours = Math.floor(Math.abs(localOffsetHours));
+            const absoluteMinutes = Math.abs(localOffsetHours % 1) * 60;
+            const minutesFormatted = String(absoluteMinutes).padStart(2, '0');
+
+            const offsetText = `${selectedTZ} (${offsetSign}${absoluteHours}:${minutesFormatted} hrs)`;
+            offsetDisplay.textContent = offsetText;
+
+            // 2. Update Converted IST Reporting Time display
+            if (!localTimestampInput || localTimestampInput.length < 10) {
+                istTimeDisplay.textContent = `Converted ${GLOBAL_REPORTING_TZ_NAME} Reporting Time: N/A`;
+                return;
+            }
+
+            const istTime = calculateTargetTime(localTimestampInput, localOffsetHours, GLOBAL_REPORTING_TZ_OFFSET);
+            if (istTime) {
+                istTimeDisplay.textContent = `Converted ${GLOBAL_REPORTING_TZ_NAME} Reporting Time: ${istTime} ${GLOBAL_REPORTING_TZ_NAME}`;
+            } else {
+                istTimeDisplay.textContent = `Converted ${GLOBAL_REPORTING_TZ_NAME} Reporting Time: Invalid format`;
+            }
+        }
+
+        /**
+         * Combined function to handle Timezone selection change.
+         */
+        function updateTimezoneChange() {
+            // 1. Update the Local Timestamp field to the current time in the newly selected zone
+            setLocalTimestampToCurrentZoneTime();
+            // 2. Recalculate and update the IST display
+            updateTimezoneDisplay();
+        }
+
+        // Mock dashboard data update function
+        function updateDashboard(data) {
+            const { total_records, successful_syncs, failed_syncs, last_sync_time } = data;
+
+            document.getElementById('total-records').textContent = total_records != null ? total_records.toLocaleString() : '0';
+            document.getElementById('successful-syncs').textContent = successful_syncs != null ? successful_syncs.toLocaleString() : '0';
+            document.getElementById('failed-syncs').textContent = failed_syncs != null ? failed_syncs.toLocaleString() : '0';
+            document.getElementById('last-sync-time').textContent = last_sync_time || 'N/A';
+        }
+
+        // --- Fetch and Upload Logic (Same as before) ---
+        async function fetchReportSummary() {
+            syncButton.disabled = true;
+            syncButton.innerHTML = `<i data-lucide="loader-circle" class="w-5 h-5 animate-spin"></i> <span>Syncing...</span>`;
+            lucide.createIcons();
+
+            const url = `${BACKEND_URL}/report/summary`;
+
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    const errorDetail = await response.json();
+                    throw new Error(`Server returned HTTP ${response.status}: ${errorDetail.detail || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+
+                // Mock dashboard data update after a successful connection check
+                updateDashboard({
+                    total_records: 12450,
+                    successful_syncs: 12440,
+                    failed_syncs: 10,
+                    // Note: Last sync time might still come in UTC from the DB, so we append the TZ name here for clarity
+                    last_sync_time: data.current_db_time ? data.current_db_time.split('.')[0] + ' ' + GLOBAL_REPORTING_TZ_NAME : new Date().toISOString().split('.')[0] + GLOBAL_REPORTING_TZ_NAME,
+                });
+
+                showModal('Sync Success', `Successfully connected to Snowflake schema: ${data.connected_schema}.\nDB Time: ${data.current_db_time.split('.')[0]} UTC.`);
+
+            } catch (error) {
+                console.error('Failed to fetch report summary:', error);
+                showModal('Connection Error', `Could not fetch dashboard data. Check the Python server and console for details. Error: ${error.message}`, true);
+            } finally {
+                syncButton.disabled = false;
+                syncButton.innerHTML = `<i data-lucide="refresh-cw" class="w-5 h-5"></i> <span>Sync Data</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        async function handleUpload(event) {
+            event.preventDefault();
+
+            uploadButton.disabled = true;
+            uploadButton.innerHTML = `<i data-lucide="loader-circle" class="w-5 h-5 animate-spin"></i> <span>Uploading...</span>`;
+            lucide.createIcons();
+
+            const hospital_id = document.getElementById('hospital-id').value;
+            const patient_id = document.getElementById('patient-id').value;
+            const local_timestamp = document.getElementById('local-timestamp').value;
+            const treatment_type = document.getElementById('treatment-type').value;
+            const hospital_timezone = document.getElementById('hospital-timezone').value;
+            const notesText = document.getElementById('treatment-notes').value.trim();
+
+            let treatment_notes = null;
+
+            if (notesText) {
+                try {
+                    treatment_notes = JSON.parse(notesText);
+                } catch (e) {
+                    showModal('Input Error', 'Treatment Notes must be a valid JSON object or empty.', true);
+                    uploadButton.disabled = false;
+                    uploadButton.innerHTML = `<i data-lucide="upload" class="w-5 h-5"></i> <span>Upload Data to Snowflake</span>`;
+                    lucide.createIcons();
+                    return;
+                }
+            }
+
+            const localOffsetHours = TIMEZONE_OFFSETS[hospital_timezone];
+
+            // Calculate final IST time
+            const converted_ist_timestamp = calculateTargetTime(local_timestamp, localOffsetHours, GLOBAL_REPORTING_TZ_OFFSET);
+
+            if (!converted_ist_timestamp) {
+                showModal('Input Error', 'Invalid Local Timestamp format. Use YYYY-MM-DD HH:MM:SS.', true);
+                uploadButton.disabled = false;
+                uploadButton.innerHTML = `<i data-lucide="upload" class="w-5 h-5"></i> <span>Upload Data to Snowflake</span>`;
+                lucide.createIcons();
+                return;
+            }
+
+            // Calculate the UTC time (for completeness, as it's often a necessary intermediate step)
+            const converted_utc_timestamp = calculateTargetTime(local_timestamp, localOffsetHours, 0.0);
+
+
+            const notes_extension = {
+                hospital_timezone: hospital_timezone,
+                local_timestamp_utc_converted: converted_utc_timestamp,
+                // Add the primary reporting time stamp
+                global_reporting_timestamp_ist: converted_ist_timestamp
+            };
+
+            // Merge existing notes with new context data
+            treatment_notes = {
+                ...(treatment_notes || {}),
+                ...notes_extension
+            };
+
+            const payload = {
+                hospital_id,
+                patient_id,
+                local_timestamp,
+                treatment_type,
+                treatment_notes
+            };
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/data/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorDetail = await response.json();
+                    throw new Error(errorDetail.detail || `Upload failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                showModal('Upload Success', `Record for Patient ${patient_id} successfully uploaded.\nTreatment ID: ${result.treatment_id}\nLocal Time: ${local_timestamp} (${hospital_timezone})\nREPORTING IST Time: ${converted_ist_timestamp}`);
+
+                // Clear form data after successful upload
+                document.getElementById('patient-id').value = 'P_' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+                document.getElementById('treatment-notes').value = '';
+                // Refresh the local time based on the current selection after successful upload
+                updateTimezoneChange();
+
+            } catch (error) {
+                console.error('Data upload failed:', error);
+                showModal('Upload Failed', `Error: ${error.message}. Please ensure the Python server is running and the database schema is correct.`, true);
+            } finally {
+                uploadButton.disabled = false;
+                uploadButton.innerHTML = `<i data-lucide="upload" class="w-5 h-5"></i> <span>Upload Data to Snowflake</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up event listeners
+            uploadForm.addEventListener('submit', handleUpload);
+
+            // Set the initial local timestamp and update all time zone displays based on the default IST selection
+            updateTimezoneChange();
+
+            // Fetch initial connection status (mocking dashboard update)
+            fetchReportSummary();
+
+            // Render Lucide icons
+            lucide.createIcons();
+        });
+    </script>
+</body>
+
+</html>
