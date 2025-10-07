@@ -39,12 +39,12 @@ Snowflake account with appropriate credentials
 pip package manager
 
 Installation
-Clone the repository:
+Clone the repository and enter the project directory:
 
-git clone [https://github.com/Laxman-N/t0-global-ai-data-sync.git](https://github.com/Laxman-N/t0-global-ai-data-sync.git)
+git clone https://github.com/Laxman-N/t0-global-ai-data-sync.git
 cd t0-ai-agent-system
 
-Create a virtual environment:
+Create and activate a virtual environment:
 
 python -m venv venv
 
@@ -58,7 +58,9 @@ Install dependencies (requires backend/requirements.txt):
 
 pip install -r backend/requirements.txt
 
-Create a .env file in the backend directory with your Snowflake credentials (see Security Notes):
+Configure Environment Variables:
+
+Create a file named .env in the backend directory with your Snowflake credentials (see Security Notes).
 
 SNOWFLAKE_USER=your_username
 SNOWFLAKE_PASSWORD=your_password
@@ -91,10 +93,46 @@ uvicorn main:app --reload --port 8001
 Open the frontend: Navigate to admin-dashboard/index.html and open it in a web browser.
 
 API Endpoints
-(API Endpoints section content remains the same)
+GET /report/summary
+Fetches connection status and database information.
+
+Response:
+
+{
+    "status": "Success",
+    "message": "Connection and query executed successfully.",
+    "current_db_time": "2025-10-07 12:30:45",
+    "connected_schema": "YOUR_DATABASE.YOUR_SCHEMA"
+}
+
+POST /data/upload
+Uploads patient treatment data to Snowflake.
+
+Request Body:
+
+{
+    "hospital_id": "HOSPITAL_A",
+    "patient_id": "P_001",
+    "local_timestamp": "2025-10-07 15:30:00",
+    "treatment_type": "Medication_Administration",
+    "treatment_notes": {
+        "drug": "Aspirin",
+        "dose": "5mg"
+    }
+}
 
 Time Zone Support
-(Time Zone Support section content remains the same)
+The application supports multiple time zones including:
+
+IST (Indian Standard Time) - Default reporting standard
+
+EST, CST, MST, PST (US Time Zones)
+
+GMT/UTC, CET, EET (European Time Zones)
+
+GST, SGT, JST, AEST, NZST (Asia-Pacific Time Zones)
+
+All timestamps are automatically converted to IST for standardized reporting.
 
 Project Structure
 t0-ai-agent-system/
@@ -116,8 +154,28 @@ Security Notes
 
 rsa_key.p8 / rsa_key.pub (Snowflake authentication keys)
 
+These files are automatically excluded by the .gitignore.
+
 Contributing
-(Contributing section content remains the same)
+Fork the repository
+
+Create a feature branch (git checkout -b feature/AmazingFeature)
+
+Commit your changes (git commit -m 'Add some AmazingFeature')
+
+Push to the branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
 
 License
 This project is licensed under the MIT License - see the LICENSE.md file for details.
+
+Support
+For issues or questions, please open an issue in the GitHub repository.
+
+Acknowledgments
+Snowflake for database infrastructure
+
+FastAPI for the backend framework
+
+Tailwind CSS for styling
