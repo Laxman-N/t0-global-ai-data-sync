@@ -1,51 +1,44 @@
-Global AI Data Sync Dashboard
+# Global AI Data Sync Dashboard
+
 A time zone-aware patient treatment data management system with FastAPI backend and Snowflake integration.
 
-Features
-🌍 Global time zone support (IST, EST, PST, GMT, and more)
+## Features
 
-📊 Real-time data synchronization with Snowflake
+- 🌍 Global time zone support (IST, EST, PST, GMT, and more)
+- 📊 Real-time data synchronization with Snowflake
+- 🏥 Patient treatment record management
+- 🕐 Automatic time zone conversion to IST reporting standard
+- 🎨 Modern, responsive UI with Tailwind CSS
 
-🏥 Patient treatment record management
+## Tech Stack
 
-🕐 Automatic time zone conversion to IST reporting standard
+**Backend:**
+- FastAPI
+- Snowflake Connector for Python
+- Python-dotenv
 
-🎨 Modern, responsive UI with Tailwind CSS
+**Frontend:**
+- HTML5
+- Tailwind CSS
+- Lucide Icons
+- Vanilla JavaScript
 
-Tech Stack
-Backend:
+## Prerequisites
 
-FastAPI
+- Python 3.8+
+- Snowflake account with appropriate credentials
+- pip package manager
 
-Snowflake Connector for Python
+## Installation
 
-Python-dotenv
-
-Frontend:
-
-HTML5
-
-Tailwind CSS
-
-Lucide Icons
-
-Vanilla JavaScript
-
-Prerequisites
-Python 3.8+
-
-Snowflake account with appropriate credentials
-
-pip package manager
-
-Installation
-Clone the repository and enter the project directory:
-
+1. Clone the repository:
+```bash
 git clone https://github.com/Laxman-N/t0-global-ai-data-sync.git
-cd t0-ai-agent-system
+cd t0-global-ai-data-sync
+```
 
-Create and activate a virtual environment:
-
+2. Create a virtual environment:
+```bash
 python -m venv venv
 
 # On Windows
@@ -53,63 +46,70 @@ venv\Scripts\activate
 
 # On macOS/Linux
 source venv/bin/activate
+```
 
-Install dependencies (requires backend/requirements.txt):
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-pip install -r backend/requirements.txt
-
-Configure Environment Variables:
-
-Create a file named .env in the backend directory with your Snowflake credentials (see Security Notes).
-
+4. Create a `.env` file in the backend directory with your Snowflake credentials:
+```env
 SNOWFLAKE_USER=your_username
 SNOWFLAKE_PASSWORD=your_password
 SNOWFLAKE_ACCOUNT=your_account
 SNOWFLAKE_WAREHOUSE=your_warehouse
 SNOWFLAKE_DATABASE=your_database
 SNOWFLAKE_SCHEMA=your_schema
+```
 
-Database Setup
-Refer to SNOWFLAKE_SETUP.md for full configuration, but run this command to create the primary table:
+## Database Setup
 
-CREATE TABLE PATIENT_TREATMENTS (
-    TREATMENT_ID VARCHAR(50) PRIMARY KEY,
-    HOSPITAL_ID VARCHAR(50) NOT NULL,
-    PATIENT_ID VARCHAR(50) NOT NULL,
-    TREATMENT_TYPE VARCHAR(100),
+Create the required table in Snowflake:
+
+```sql
+CREATE TABLE PATIENT_TREATMENT_RECORDS (
+    HOSPITAL_ID VARCHAR(100),
+    PATIENT_ID VARCHAR(100),
+    LOCAL_TIMESTAMP TIMESTAMP,
+    TREATMENT_TYPE VARCHAR(200),
     TREATMENT_NOTES VARIANT,
-    LOCAL_TIMESTAMP TIMESTAMP_TZ,
-    T0_UTC_TIMESTAMP TIMESTAMP_NTZ NOT NULL,
-    INGESTION_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+    UPLOAD_TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 );
+```
 
-Running the Application
-Start the FastAPI backend:
+## Running the Application
 
+1. Start the FastAPI backend:
+```bash
 cd backend
-# Note: Use port 8001 if port 8000 is unavailable
-uvicorn main:app --reload --port 8001
+uvicorn main:app --reload --port 8000
+```
 
-Open the frontend: Navigate to admin-dashboard/index.html and open it in a web browser.
+2. Open the frontend:
+   - Navigate to `admin-dashboard/index.html`
+   - Open it in a web browser or serve it with a local server
 
-API Endpoints
-GET /report/summary
+## API Endpoints
+
+### GET `/report/summary`
 Fetches connection status and database information.
 
-Response:
-
+**Response:**
+```json
 {
     "status": "Success",
     "message": "Connection and query executed successfully.",
     "current_db_time": "2025-10-07 12:30:45",
     "connected_schema": "YOUR_DATABASE.YOUR_SCHEMA"
 }
+```
 
-POST /data/upload
+### POST `/data/upload`
 Uploads patient treatment data to Snowflake.
 
-Request Body:
-
+**Request Body:**
+```json
 {
     "hospital_id": "HOSPITAL_A",
     "patient_id": "P_001",
@@ -120,62 +120,61 @@ Request Body:
         "dose": "5mg"
     }
 }
+```
 
-Time Zone Support
+## Time Zone Support
+
 The application supports multiple time zones including:
-
-IST (Indian Standard Time) - Default reporting standard
-
-EST, CST, MST, PST (US Time Zones)
-
-GMT/UTC, CET, EET (European Time Zones)
-
-GST, SGT, JST, AEST, NZST (Asia-Pacific Time Zones)
+- IST (Indian Standard Time) - Default reporting standard
+- EST, CST, MST, PST (US Time Zones)
+- GMT/UTC, CET, EET (European Time Zones)
+- GST, SGT, JST, AEST, NZST (Asia-Pacific Time Zones)
 
 All timestamps are automatically converted to IST for standardized reporting.
 
-Project Structure
-t0-ai-agent-system/
+## Project Structure
+
+```
+TO-AI-AGENT-SYSTEM/
 ├── admin-dashboard/
 │   └── index.html          # Frontend dashboard
 ├── backend/
-│   ├── ai_agent/           # Core Time Sync Logic
-│   │   └── time_sync_agent.py
 │   ├── main.py             # FastAPI application
-│   ├── config.py           # Configuration details
-│   └── requirements.txt    # Python dependencies
+│   ├── config.py           # Configuration (if any)
+│   ├── requirements.txt    # Python dependencies
+│   ├── .env                # Environment variables (not committed)
+│   └── rsa_key.p8          # Snowflake key (not committed)
 ├── .gitignore
 └── README.md
+```
 
-Security Notes
-⚠️ IMPORTANT: Never commit the following files:
+## Security Notes
 
-.env (contains passwords and credentials)
+⚠️ **IMPORTANT:** Never commit the following files:
+- `.env` (contains passwords and credentials)
+- `rsa_key.p8` / `rsa_key.pub` (Snowflake authentication keys)
+- Any files containing sensitive information
 
-rsa_key.p8 / rsa_key.pub (Snowflake authentication keys)
+These files are automatically excluded by the `.gitignore`.
 
-These files are automatically excluded by the .gitignore.
+## Contributing
 
-Contributing
-Fork the repository
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Create a feature branch (git checkout -b feature/AmazingFeature)
+## License
 
-Commit your changes (git commit -m 'Add some AmazingFeature')
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Push to the branch (git push origin feature/AmazingFeature)
+## Support
 
-Open a Pull Request
-
-License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-
-Support
 For issues or questions, please open an issue in the GitHub repository.
 
-Acknowledgments
-Snowflake for database infrastructure
+## Acknowledgments
 
-FastAPI for the backend framework
-
-Tailwind CSS for styling
+- Snowflake for database infrastructure
+- FastAPI for the backend framework
+- Tailwind CSS for styling
