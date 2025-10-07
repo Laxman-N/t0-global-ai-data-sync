@@ -34,7 +34,7 @@ A time zone-aware patient treatment data management system with FastAPI backend 
 1. Clone the repository:
 ```bash
 git clone https://github.com/Laxman-N/t0-global-ai-data-sync.git
-cd YOUR_REPO_NAME
+cd t0-global-ai-data-sync
 ```
 
 2. Create a virtual environment:
