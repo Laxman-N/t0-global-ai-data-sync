@@ -5,19 +5,22 @@ from datetime import datetime, timezone
 class T0AIAgent:
     """
     The T0 AI Agent handles time zone detection, synchronization, and logging.
-    It maps a hospital ID to a specific timezone and converts local timestamps 
+    It maps a facility ID to a specific timezone and converts local timestamps 
     to a unified T0 (UTC) timestamp, logging the event details.
     """
 
-    # Rule-based detection mapping: Hospital ID to IANA Time Zone String
-    # This acts as the "intelligence" to detect the source time zone.
-    TIMEZONE_MAP = {
-        "IND001": "Asia/Kolkata",       # IST (India Standard Time, UTC+5:30)
-        "USA005": "America/New_York",   # EST/EDT (Eastern Time, Handles DST)
-        "JPN002": "Asia/Tokyo",         # JST (Japan Standard Time, UTC+9)
-        "UKR010": "Europe/Kiev",        # Example with DST changes
-        "DEU007": "Europe/Berlin",      # Example with DST changes
-    }
+    def __init__(self):
+        # Enhanced timezone map with offset information for better handling
+        self.TIMEZONE_MAP = {
+            'FAC_001': {'zone': 'Asia/Kolkata', 'offset': 5.5, 'name': 'IST'},
+            'FAC_002': {'zone': 'America/New_York', 'offset': -5.0, 'name': 'EST'},
+            'FAC_003': {'zone': 'Europe/London', 'offset': 0.0, 'name': 'GMT'},
+            'FAC_004': {'zone': 'Asia/Tokyo', 'offset': 9.0, 'name': 'JST'},
+            'FAC_005': {'zone': 'Australia/Sydney', 'offset': 10.0, 'name': 'AEST'},
+            'FAC_006': {'zone': 'Europe/Paris', 'offset': 1.0, 'name': 'CET'},
+            'FAC_007': {'zone': 'Asia/Dubai', 'offset': 4.0, 'name': 'GST'},
+            'FAC_008': {'zone': 'America/Los_Angeles', 'offset': -8.0, 'name': 'PST'}
+        }
 
     def detect_timezone(self, hospital_id: str) -> str:
         """

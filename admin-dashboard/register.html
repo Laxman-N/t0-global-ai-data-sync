@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration - Global AI Data Sync</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .section-title {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        label .required {
+            color: #e74c3c;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .timestamp-display {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .timestamp-display div {
+            margin-bottom: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message h3 {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+
+        .success-message p {
+            color: #155724;
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav-links {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Patient Registration</h1>
+            <p>Global time zone-aware patient registration</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div id="successMessage" class="success-message">
+            <h3>✓ Registration Successful!</h3>
+            <p><strong>Patient ID:</strong> <span id="patientId"></span></p>
+            <p><strong>Registration ID:</strong> <span id="registrationId"></span></p>
+            <p><strong>IST Timestamp:</strong> <span id="istTime"></span></p>
+        </div>
+
+        <form id="registrationForm">
+            <div class="section-title">👤 Personal Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patientName">Full Name <span class="required">*</span></label>
+                    <input type="text" id="patientName" name="patientName" placeholder="Enter patient full name"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
+                    <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="contactNumber">Contact Number <span class="required">*</span></label>
+                    <input type="tel" id="contactNumber" name="contactNumber" placeholder="e.g., +1-234-567-8900"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="patient@example.com">
+                </div>
+            </div>
+
+            <div class="section-title">🏢 Facility Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="facilityId">Registration Facility <span class="required">*</span></label>
+                    <select id="facilityId" name="facilityId" required>
+                        <option value="">-- Loading Facilities... --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="timezone">Local Time Zone <span class="required">*</span></label>
+                    <select id="timezone" name="timezone" required>
+                        <option value="">Select Timezone</option>
+                        <option value="GMT/UTC">GMT/UTC (Greenwich Mean Time)</option>
+                        <option value="EST">EST (Eastern Standard Time, UTC-5)</option>
+                        <option value="CST">CST (Central Standard Time, UTC-6)</option>
+                        <option value="MST">MST (Mountain Standard Time, UTC-7)</option>
+                        <option value="PST">PST (Pacific Standard Time, UTC-8)</option>
+                        <option value="ART">ART (Argentina, UTC-3)</option>
+                        <option value="CET">CET (Central European Time, UTC+1)</option>
+                        <option value="EET">EET (Eastern European Time, UTC+2)</option>
+                        <option value="MSK">MSK (Moscow Standard Time, UTC+3)</option>
+                        <option value="GST">GST (Gulf Standard Time, UTC+4)</option>
+                        <option value="IST">IST (Indian Standard Time, UTC+5:30)</option>
+                        <option value="SGT">SGT (Singapore Time, UTC+8)</option>
+                        <option value="JST">JST (Japan Standard Time, UTC+9)</option>
+                        <option value="AEST">AEST (Australian Eastern, UTC+10)</option>
+                        <option value="NZST">NZST (New Zealand, UTC+12)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="section-title">⏰ Registration Time Information</div>
+
+            <div class="form-row full">
+                <div class="form-group">
+                    <label for="registrationTime">Local Registration Time <span class="required">*</span></label>
+                    <input type="datetime-local" id="registrationTime" name="registrationTime" required>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ Important:</strong> The local registration time and its calculated IST equivalent will be
+                sent to the backend for standardized registration.
+            </div>
+
+            <div class="timestamp-display">
+                <div>
+                    <strong>Local Registration Time:</strong>
+                    <span id="displayLocalTime">-</span>
+                </div>
+                <div>
+                    <strong>IST Equivalent Time:</strong>
+                    <span id="displayISTTime">-</span>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Registering patient...</p>
+            </div>
+
+            <div class="button-group">
+                <button type="reset" class="btn-reset">Clear Form</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Register Patient</button>
+            </div>
+        </form>
+
+        <div class="nav-links">
+            <a href="index.html">← Home</a>
+            <a href="admin.html">Admin Dashboard →</a>
+        </div>
+    </div>
+
+    <script>
+        // ✅ FIXED: Changed to include /api prefix
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        // Set default datetime to now
+        function setDefaultDateTime() {
+            const now = new Date();
+            const isoString = now.toISOString().slice(0, 16);
+            document.getElementById('registrationTime').value = isoString;
+            updateTimestampDisplay();
+        }
+
+        // Calculate IST time based on local time and timezone
+        function calculateISTTime(localTime, timezone) {
+            const timezoneOffsets = {
+                'GMT/UTC': 0, 'EST': -5, 'CST': -6, 'MST': -7, 'PST': -8,
+                'ART': -3, 'CET': 1, 'EET': 2, 'MSK': 3, 'GST': 4,
+                'IST': 5.5, 'SGT': 8, 'JST': 9, 'AEST': 10, 'NZST': 12
+            };
+
+            try {
+                const dt = new Date(localTime + ':00');
+                const localOffset = timezoneOffsets[timezone] || 0;
+                const istOffset = 5.5;
+
+                const utcTime = new Date(dt.getTime() - (localOffset * 60 * 60 * 1000));
+                const istTime = new Date(utcTime.getTime() + (istOffset * 60 * 60 * 1000));
+
+                const year = istTime.getFullYear();
+                const month = String(istTime.getMonth() + 1).padStart(2, '0');
+                const day = String(istTime.getDate()).padStart(2, '0');
+                const hours = String(istTime.getHours()).padStart(2, '0');
+                const minutes = String(istTime.getMinutes()).padStart(2, '0');
+                const seconds = String(istTime.getSeconds()).padStart(2, '0');
+
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            } catch (e) {
+                return '-';
+            }
+        }
+
+        // Update displayed times
+        function updateTimestampDisplay() {
+            const localTime = document.getElementById('registrationTime').value;
+            const timezone = document.getElementById('timezone').value;
+
+            if (!localTime || !timezone) {
+                document.getElementById('displayLocalTime').textContent = '-';
+                document.getElementById('displayISTTime').textContent = '-';
+                return;
+            }
+
+            document.getElementById('displayLocalTime').textContent = `${localTime.replace('T', ' ')} (${timezone})`;
+            const istTime = calculateISTTime(localTime, timezone);
+            document.getElementById('displayISTTime').textContent = istTime;
+        }
+
+        // Show alert messages
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+
+            if (type !== 'error') {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // Fetch facilities from backend
+        async function fetchFacilities() {
+            const facilitySelect = document.getElementById('facilityId');
+
+            try {
+                console.log('Fetching facilities from:', `${API_BASE_URL}/facilities`);
+
+                const response = await fetch(`${API_BASE_URL}/facilities`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const facilities = await response.json();
+                console.log('Facilities received:', facilities);
+
+                facilitySelect.innerHTML = '<option value="">-- Select Facility --</option>';
+
+                if (!facilities || facilities.length === 0) {
+                    facilitySelect.innerHTML += '<option disabled>No facilities found</option>';
+                    showAlert('No facilities found. Add one via Admin Dashboard first.', 'error');
+                    return;
+                }
+
+                facilities.forEach(facility => {
+                    const option = document.createElement('option');
+                    option.value = facility.FACILITY_ID;
+                    option.textContent = `${facility.FACILITY_NAME} (${facility.FACILITY_LOCATION} - ${facility.FACILITY_TIMEZONE})`;
+                    facilitySelect.appendChild(option);
+                });
+
+            } catch (error) {
+                console.error('Error fetching facilities:', error);
+                facilitySelect.innerHTML = '<option>Error loading facilities</option>';
+                showAlert(`Error loading facilities: ${error.message}. Make sure backend is running on port 8000.`, 'error');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const patientName = document.getElementById('patientName').value;
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const email = document.getElementById('email').value;
+            const facilityId = document.getElementById('facilityId').value;
+            const timezone = document.getElementById('timezone').value;
+            const registrationTime = document.getElementById('registrationTime').value;
+
+            if (!facilityId) {
+                showAlert('Please select a Registration Facility.', 'error');
+                return;
+            }
+
+            const registrationLocalTime = registrationTime.replace('T', ' ') + ':00';
+
+            const payload = {
+                full_name: patientName,
+                date_of_birth: dateOfBirth,
+                contact_number: contactNumber,
+                email: email || null,
+                registration_facility: facilityId,
+                local_time_zone: timezone,
+                local_registration_time: registrationLocalTime
+            };
+
+            console.log('Sending payload:', payload);
+
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register-patient`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log('Response:', data);
+
+                if (response.ok) {
+                    document.getElementById('patientId').textContent = data.patient_id;
+                    document.getElementById('registrationId').textContent = data.registration_id;
+                    document.getElementById('istTime').textContent = data.IST_Timestamp;
+                    document.getElementById('successMessage').classList.add('show');
+                    document.getElementById('registrationForm').reset();
+                    setDefaultDateTime();
+                } else {
+                    showAlert(`Error: ${data.detail || 'Registration failed'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(`Error: Could not connect to backend at ${API_BASE_URL}. Is the server running?`, 'error');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+
+        // Event listeners for real-time timestamp update
+        document.getElementById('registrationTime').addEventListener('change', updateTimestampDisplay);
+        document.getElementById('timezone').addEventListener('change', updateTimestampDisplay);
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded, fetching facilities...');
+            fetchFacilities();
+            setDefaultDateTime();
+        });
+    </script>
+</body>
+
+</html>
