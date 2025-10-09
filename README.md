@@ -1,60 +1,71 @@
-# 🌍 Global AI Data Sync Dashboard
+# 🌍 Global AI Data Sync System
 
-> A sophisticated, time zone-aware patient treatment data management system built with FastAPI and Snowflake integration.
+A comprehensive multi-timezone healthcare data synchronization platform with real-time patient registration, facility management, and automated sync operations powered by FastAPI and Snowflake.
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-00a393.svg)](https://fastapi.tiangolo.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.md)
+## 📖 Overview
 
----
+This system enables healthcare organizations to manage patient data across multiple global facilities while automatically handling timezone conversions, synchronization operations, and performance analytics. All timestamps are normalized to IST (Indian Standard Time) for standardized reporting and analysis.
 
 ## ✨ Key Features
 
-- **🌐 Global Time Zone Support** - Seamlessly handles IST, EST, PST, GMT, and 15+ time zones
-- **⚡ Real-time Synchronization** - Instant data sync with Snowflake cloud infrastructure
-- **🏥 Healthcare Data Management** - Comprehensive patient treatment record tracking
-- **🔄 Automatic Conversion** - Smart time zone conversion to IST reporting standard
-- **🎨 Modern UI/UX** - Responsive design with Tailwind CSS and intuitive interface
-- **🔒 Enterprise Security** - Secure credential management and encrypted connections
+**🏥 Patient Management**
+- Multi-timezone patient registration supporting 15+ global time zones
+- Automatic timestamp conversion to IST for standardized reporting
+- Real-time calendar view for tracking daily registrations
+- Comprehensive patient records with demographics and facility associations
 
----
+**🏢 Facility Management**
+- Global facility network spanning multiple continents
+- Timezone-aware operations with each facility in its local timezone
+- Active status tracking and monitoring
+- Aggregated statistics by timezone and location
+
+**🔄 Sync Operations**
+- Manual and automated data synchronization triggers
+- Comprehensive operation logging with lag metrics
+- Multi-target support (Snowflake, S3, and more)
+- Real-time performance analytics and monitoring
+
+**📊 Advanced Analytics**
+- Timezone offset analysis comparing performance across regions
+- Lag statistics identifying sync bottlenecks
+- Success rate tracking for data quality monitoring
+- Interactive visualizations with Chart.js
 
 ## 🛠 Technology Stack
 
-### Backend
-- **FastAPI** - High-performance async web framework
-- **Snowflake Connector** - Cloud data warehouse integration
-- **Python-dotenv** - Environment configuration management
+**Backend**
+- FastAPI - Modern async web framework with automatic API documentation
+- Snowflake Connector - Enterprise cloud data warehouse integration
+- Python-dotenv - Secure environment variable management
+- PyTZ - Timezone calculations and conversions
 
-### Frontend
-- **HTML5** - Modern semantic markup
-- **Tailwind CSS** - Utility-first styling framework
-- **Lucide Icons** - Beautiful consistent iconography
-- **Vanilla JavaScript** - Lightweight, no framework overhead
+**Frontend**
+- Vanilla JavaScript - No framework dependencies
+- Chart.js - Interactive data visualizations
+- Responsive CSS - Mobile-first design
+- Modern HTML5 - Semantic and accessible markup
 
----
+**Database**
+- Snowflake - Scalable cloud data warehouse with native timezone support
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have:
-
-- ✅ Python 3.8 or higher installed
-- ✅ Active Snowflake account with credentials
-- ✅ pip package manager
-- ✅ Git version control
-
----
+- Python 3.8 or higher
+- Active Snowflake account with admin privileges
+- Modern web browser (Chrome, Firefox, Safari, or Edge)
+- Git for version control
 
 ## 🚀 Quick Start
 
-### 1. Clone & Navigate
+### 1️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/Laxman-N/t0-global-ai-data-sync.git
-cd t0-ai-agent-system
+cd t0-global-ai-data-sync
 ```
 
-### 2. Set Up Virtual Environment
+### 2️⃣ Set Up Python Environment
 
 **Windows:**
 ```bash
@@ -64,269 +75,287 @@ venv\Scripts\activate
 
 **macOS/Linux:**
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### 3️⃣ Install Dependencies
 
 ```bash
-pip install -r backend/requirements.txt
+cd backend
+pip install -r requirements.txt
 ```
 
-### 4. Configure Environment
+### 4️⃣ Configure Environment Variables
 
 Create a `.env` file in the `backend/` directory:
 
 ```env
 SNOWFLAKE_USER=your_username
 SNOWFLAKE_PASSWORD=your_password
-SNOWFLAKE_ACCOUNT=your_account
-SNOWFLAKE_WAREHOUSE=your_warehouse
-SNOWFLAKE_DATABASE=your_database
-SNOWFLAKE_SCHEMA=your_schema
+SNOWFLAKE_ACCOUNT=your_account.region
+SNOWFLAKE_WAREHOUSE=COMPUTE_WH
+SNOWFLAKE_DATABASE=HEALTHCARE_DB
+SNOWFLAKE_SCHEMA=PUBLIC
+SNOWFLAKE_ROLE=ACCOUNTADMIN
 ```
 
-> ⚠️ **Security Note:** Never commit `.env` files to version control
+**Security Note:** Never commit the `.env` file to version control.
 
----
+## 💾 Database Setup
 
-## 💾 Database Configuration
-
-### Quick Setup
-
-Run this SQL command in your Snowflake console:
+### Create Database and Schema
 
 ```sql
-CREATE TABLE PATIENT_TREATMENTS (
-    TREATMENT_ID VARCHAR(50) PRIMARY KEY,
-    HOSPITAL_ID VARCHAR(50) NOT NULL,
-    PATIENT_ID VARCHAR(50) NOT NULL,
-    TREATMENT_TYPE VARCHAR(100),
-    TREATMENT_NOTES VARIANT,
-    LOCAL_TIMESTAMP TIMESTAMP_TZ,
-    T0_UTC_TIMESTAMP TIMESTAMP_NTZ NOT NULL,
-    INGESTION_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+CREATE DATABASE IF NOT EXISTS HEALTHCARE_DB;
+USE DATABASE HEALTHCARE_DB;
+CREATE SCHEMA IF NOT EXISTS PUBLIC;
+```
+
+### Create Required Tables
+
+**Source Facilities:**
+```sql
+CREATE TABLE SOURCE_FACILITIES (
+    FACILITY_ID VARCHAR(50) PRIMARY KEY,
+    FACILITY_NAME VARCHAR(200) NOT NULL,
+    FACILITY_TIMEZONE VARCHAR(50) NOT NULL,
+    FACILITY_LOCATION VARCHAR(100),
+    IS_ACTIVE BOOLEAN DEFAULT TRUE,
+    LAST_SYNC_TIME TIMESTAMP_NTZ,
+    CREATED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 ```
 
-> 📖 For detailed configuration, see `SNOWFLAKE_SETUP.md`
+**Sync Targets:**
+```sql
+CREATE TABLE SYNC_TARGETS (
+    TARGET_ID VARCHAR(50) PRIMARY KEY,
+    TARGET_NAME VARCHAR(200) NOT NULL,
+    TARGET_TYPE VARCHAR(50) NOT NULL,
+    CONNECTION_STRING TEXT NOT NULL,
+    IS_ACTIVE BOOLEAN DEFAULT TRUE,
+    LAST_SYNC_TIME TIMESTAMP_NTZ,
+    CREATED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
+);
+```
 
----
+**Patient Registrations:**
+```sql
+CREATE TABLE PATIENT_REGISTRATIONS (
+    PATIENT_ID VARCHAR(50) PRIMARY KEY,
+    REGISTRATION_ID VARCHAR(50) UNIQUE NOT NULL,
+    PATIENT_NAME VARCHAR(200) NOT NULL,
+    DATE_OF_BIRTH DATE NOT NULL,
+    CONTACT_NUMBER VARCHAR(50) NOT NULL,
+    EMAIL VARCHAR(200),
+    FACILITY_ID VARCHAR(50) NOT NULL,
+    REGISTRATION_TIMEZONE VARCHAR(50) NOT NULL,
+    REGISTRATION_LOCAL_TIME VARCHAR(50) NOT NULL,
+    REGISTRATION_IST_TIME TIMESTAMP_NTZ NOT NULL,
+    CREATED_AT TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+    FOREIGN KEY (FACILITY_ID) REFERENCES SOURCE_FACILITIES(FACILITY_ID)
+);
+```
+
+**Sync Operations Log:**
+```sql
+CREATE TABLE SYNC_OPERATIONS_LOG (
+    LOG_ID VARCHAR(50) PRIMARY KEY,
+    SOURCE_FACILITY_ID VARCHAR(50) NOT NULL,
+    TARGET_ID VARCHAR(50) NOT NULL,
+    OPERATION_TYPE VARCHAR(50) NOT NULL,
+    RECORD_COUNT INTEGER,
+    LAG_SECONDS FLOAT,
+    STATUS VARCHAR(20) NOT NULL,
+    SYNC_STARTED_AT TIMESTAMP_NTZ,
+    SYNC_COMPLETED_AT TIMESTAMP_NTZ,
+    DURATION_SECONDS FLOAT,
+    ERROR_MESSAGE TEXT,
+    CREATED_BY_USER VARCHAR(100),
+    FOREIGN KEY (SOURCE_FACILITY_ID) REFERENCES SOURCE_FACILITIES(FACILITY_ID),
+    FOREIGN KEY (TARGET_ID) REFERENCES SYNC_TARGETS(TARGET_ID)
+);
+```
 
 ## 🎯 Running the Application
 
-### Start Backend Server
+### Start the Backend Server
 
 ```bash
 cd backend
-uvicorn main:app --reload --port 8001
+python main.py
 ```
 
-> 💡 Using port 8001 to avoid conflicts with common port 8000 services
+The API will be available at:
+- Application: `http://localhost:8000`
+- Interactive API Docs: `http://localhost:8000/docs`
+- Alternative Docs: `http://localhost:8000/redoc`
 
-### Launch Frontend
+### Access the Frontend
 
-Open `admin-dashboard/index.html` in your preferred web browser, or serve it using:
-
-```bash
-python -m http.server 8080
-```
-
-Then navigate to `http://localhost:8080/admin-dashboard/`
-
----
+Open your browser and navigate to:
+- Home: `http://localhost:8000/`
+- Patient Registration: `http://localhost:8000/register.html`
+- Admin Dashboard: `http://localhost:8000/admin.html`
 
 ## 📡 API Reference
 
-### Health & Status Check
+### Core Endpoints
 
-**Endpoint:** `GET /report/summary`
+**Health Check**
+```http
+GET /health
+```
 
-**Description:** Retrieves connection status and database information
+**Dashboard Overview**
+```http
+GET /api/dashboard/overview
+```
 
-**Response Example:**
-```json
+**List Facilities**
+```http
+GET /api/facilities?timezone=IST
+```
+
+**Register Patient**
+```http
+POST /api/register-patient
+Content-Type: application/json
+
 {
-    "status": "Success",
-    "message": "Connection and query executed successfully.",
-    "current_db_time": "2025-10-07 12:30:45",
-    "connected_schema": "YOUR_DATABASE.YOUR_SCHEMA"
+    "full_name": "John Doe",
+    "date_of_birth": "1990-01-15",
+    "contact_number": "+1-234-567-8900",
+    "email": "john.doe@example.com",
+    "registration_facility": "FAC_12345678",
+    "local_time_zone": "EST",
+    "local_registration_time": "2025-10-10 09:30:00"
 }
 ```
 
-### Upload Treatment Data
+**Trigger Manual Sync**
+```http
+POST /api/trigger-sync
+Content-Type: application/json
 
-**Endpoint:** `POST /data/upload`
-
-**Description:** Uploads patient treatment records to Snowflake
-
-**Request Body:**
-```json
 {
-    "hospital_id": "HOSPITAL_A",
-    "patient_id": "P_001",
-    "local_timestamp": "2025-10-07 15:30:00",
-    "treatment_type": "Medication_Administration",
-    "treatment_notes": {
-        "drug": "Aspirin",
-        "dose": "5mg"
-    }
+    "source_facility_id": "FAC_12345678",
+    "target_id": "TGT_87654321",
+    "operation_type": "MANUAL_SYNC"
 }
 ```
 
-**Response Example:**
-```json
-{
-    "status": "success",
-    "treatment_id": "TRT_12345",
-    "ist_timestamp": "2025-10-07 20:00:00 IST"
-}
-```
-
----
+For complete API documentation, visit `http://localhost:8000/docs` when the server is running.
 
 ## 🌐 Supported Time Zones
 
-The system intelligently handles multiple time zones with automatic IST conversion:
+The system supports automatic conversion between these timezones and IST:
 
-| Region | Time Zones |
-|--------|------------|
-| **North America** | EST, CST, MST, PST |
-| **Europe** | GMT/UTC, CET, EET |
-| **Asia** | IST (Standard), GST, SGT, JST |
-| **Oceania** | AEST, NZST |
+- **North America:** EST, CST, MST, PST
+- **South America:** ART
+- **Europe:** GMT/UTC, CET, EET, MSK
+- **Middle East:** GST
+- **Asia:** IST (standard), SGT, JST
+- **Oceania:** AEST, NZST
 
-All timestamps are normalized to **IST (Indian Standard Time)** for standardized reporting and analysis.
+All timestamps are automatically converted to IST (UTC+5:30) for standardized reporting.
 
----
-
-## 📁 Project Architecture
+## 📁 Project Structure
 
 ```
-t0-ai-agent-system/
+t0-global-ai-data-sync/
+├── backend/
+│   ├── main.py                 # FastAPI application
+│   ├── config.py               # Configuration management
+│   ├── requirements.txt        # Python dependencies
+│   └── .env                    # Environment variables (not in git)
 │
-├── 📂 admin-dashboard/
-│   └── 📄 index.html              # Main dashboard interface
+├── admin-dashboard/
+│   ├── index.html              # Home page
+│   ├── register.html           # Patient registration
+│   └── admin.html              # Admin dashboard
 │
-├── 📂 backend/
-│   ├── 📂 ai_agent/
-│   │   └── 📄 time_sync_agent.py  # Time zone conversion logic
-│   ├── 📄 main.py                 # FastAPI application entry
-│   ├── 📄 config.py               # Configuration management
-│   └── 📄 requirements.txt        # Python dependencies
-│
-├── 📄 .gitignore                  # Git exclusion rules
-├── 📄 README.md                   # Project documentation
-└── 📄 SNOWFLAKE_SETUP.md          # Database setup guide
+├── .gitignore
+├── README.md
+└── LICENSE.md
 ```
 
----
+## 🔧 Troubleshooting
+
+**Database Connection Failed**
+- Verify `.env` file exists in the `backend/` directory
+- Check that Snowflake credentials are correct
+- Ensure the warehouse is running in Snowflake console
+
+**CORS Policy Blocking Requests**
+- Confirm `main.py` has `allowed_origins = ["*"]` for development
+- Restart the FastAPI server after changes
+
+**Error Loading Facilities**
+- Verify all tables exist in Snowflake
+- Check browser console (F12) for detailed errors
+- Ensure `register.html` uses the correct API_BASE_URL
+
+**Module Not Found Errors**
+```bash
+pip install -r backend/requirements.txt --upgrade
+```
 
 ## 🔐 Security Best Practices
 
-### Files to Never Commit
+**Never commit these files:**
+- `.env` - Database credentials
+- `*.log` - Application logs
+- `venv/` - Virtual environment
 
-The following files contain sensitive information and are automatically excluded:
-
-- 🚫 `.env` - Database credentials and API keys
-- 🚫 `rsa_key.p8` - Private authentication key
-- 🚫 `rsa_key.pub` - Public authentication key
-- 🚫 `*.log` - Application logs
-
-> ✅ These are pre-configured in `.gitignore`
-
-### Additional Recommendations
-
-- Use environment-specific configuration files
+**Production Recommendations:**
+- Use secret management services (AWS Secrets Manager, Azure Key Vault)
+- Enable HTTPS with TLS certificates
 - Implement role-based access control in Snowflake
-- Enable MFA for all production accounts
-- Regularly rotate credentials and keys
-- Use HTTPS for all API communications
-
----
+- Enable multi-factor authentication
+- Regular security audits and access log monitoring
+- Restrict CORS to specific origins
+- Implement API rate limiting
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
+Contributions are welcome! Please follow these steps:
 
-### Development Workflow
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and test thoroughly
+4. Commit with semantic messages (`git commit -m "feat: Add amazing feature"`)
+5. Push to your fork (`git push origin feature/amazing-feature`)
+6. Open a Pull Request with a detailed description
 
-1. **Fork** the repository to your GitHub account
-2. **Create** a feature branch
-   ```bash
-   git checkout -b feature/YourAmazingFeature
-   ```
-3. **Commit** your changes with descriptive messages
-   ```bash
-   git commit -m "feat: Add amazing new feature"
-   ```
-4. **Push** to your branch
-   ```bash
-   git push origin feature/YourAmazingFeature
-   ```
-5. **Open** a Pull Request with a detailed description
-
-### Commit Convention
-
-We follow semantic commit messages:
+**Commit Convention:**
 - `feat:` New features
 - `fix:` Bug fixes
 - `docs:` Documentation updates
-- `style:` Code formatting
 - `refactor:` Code restructuring
-- `test:` Test additions/updates
+- `test:` Test additions
 - `chore:` Maintenance tasks
-
----
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see [LICENSE.md](LICENSE.md) for full details.
+This project is licensed under the MIT License. See LICENSE.md for details.
 
----
+## 💬 Support
 
-## 💬 Support & Community
-
-### Get Help
-
-- 🐛 **Bug Reports:** [Open an Issue](https://github.com/Laxman-N/t0-global-ai-data-sync/issues)
-- 💡 **Feature Requests:** [Start a Discussion](https://github.com/Laxman-N/t0-global-ai-data-sync/discussions)
-- 📧 **Email:** support@yourdomain.com
-
-### Stay Updated
-
-- ⭐ Star the repository to show support
-- 👀 Watch for updates and releases
-- 🍴 Fork to create your own version
-
----
+- 🐛 Report bugs via GitHub Issues
+- 💡 Request features via GitHub Discussions
+- 📧 Email: laxman.support@example.com
 
 ## 🙏 Acknowledgments
 
-Special thanks to the incredible tools and teams behind:
-
-- **Snowflake** - Cloud data warehouse platform
-- **FastAPI** - Modern Python web framework
-- **Tailwind CSS** - Utility-first CSS framework
-- **Lucide** - Beautiful icon library
-
----
-
-## 🔄 Changelog
-
-### Version 1.0.0 (Current)
-- ✨ Initial release with core functionality
-- 🌍 Multi-timezone support
-- 📊 Real-time Snowflake integration
-- 🎨 Modern responsive dashboard
+Built with these amazing open-source technologies:
+- FastAPI - Modern Python web framework
+- Snowflake - Cloud data warehouse platform
+- Chart.js - JavaScript charting library
+- PyTZ - Timezone calculations for Python
+- Uvicorn - Lightning-fast ASGI server
 
 ---
 
-<div align="center">
-
-**Made with ❤️ for global healthcare data management**
-
-[⬆ Back to Top](#-global-ai-data-sync-dashboard)
-
-</div>
+**Built with ❤️ for global healthcare data synchronization**
